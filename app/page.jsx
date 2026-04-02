@@ -85,7 +85,7 @@ export default function Home() {
   useEffect(() => {
     if (!vis.randy || phase !== 0) return;
     const t1 = setTimeout(() => setVis(v => ({ ...v, reality: true })), 800);
-    const t2 = setTimeout(() => setVis(v => ({ ...v, tagline: true })), 1600);
+    const t2 = setTimeout(() => setVis(v => ({ ...v, tagline: true })), 2200);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [vis.randy]);
 
