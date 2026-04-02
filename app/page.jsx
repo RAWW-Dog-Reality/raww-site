@@ -4,18 +4,17 @@ import { useEffect } from 'react';
 
 export default function Home() {
   useEffect(() => {
-    // Eggplant cursor — rotated 180° so the round (non-stem) end is the pointer tip
+    // Tongue cursor
     (function () {
       const size = 64;
       const c = document.createElement('canvas');
       c.width = c.height = size;
       const ctx = c.getContext('2d');
       ctx.translate(size / 2, size / 2);
-      ctx.rotate(Math.PI); // 180° clockwise → round end → upper-left
       ctx.font = '44px serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('🍆', 0, 2);
+      ctx.fillText('👅', 0, 2);
       const url = c.toDataURL();
       const rule = `url(${url}) 10 10, auto`;
       document.documentElement.style.cursor = rule;
