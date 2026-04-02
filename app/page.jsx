@@ -222,6 +222,12 @@ export default function Home() {
                 suppressHydrationWarning
               ></model-viewer>
             </div>
+            {/* Loinchop preload: hidden 1px model-viewer so phase 2 gets it from cache */}
+            <model-viewer
+              src="/assets/loinchop.glb"
+              style={{ position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+              suppressHydrationWarning
+            ></model-viewer>
             {/* Randy always mounted so it preloads; hidden until vis.randy */}
             <div ref={randyPhase1Ref} className={`intro-randy float-b${vis.randy ? ' anim-fade' : ' hidden'}`}>
               {randyMV}
