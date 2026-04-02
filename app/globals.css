@@ -18,6 +18,10 @@
     box-sizing: border-box;
 }
 
+model-viewer {
+    outline: none;
+}
+
 html, body {
     width: 100%;
     height: 100%;
@@ -76,6 +80,11 @@ model-viewer {
     --progress-mask: transparent;
 }
 
+/* ── Text block pulled up further in phase 0 ── */
+.intro-text-block {
+  margin-top: -52vh;
+}
+
 /* ── Text block: pulled up into the empty bottom of the model area ── */
 .text-block {
     margin-top: -3vh;
@@ -96,6 +105,7 @@ model-viewer {
 
 /* ── Wide / landscape screen: less vertical room, reduce overlap ── */
 @media (orientation: landscape) {
+    .logo-wrap { height: 56vh; }
     .hero { max-height: 50vh; }
     .text-block { margin-top: -2vh; }
     .reality-text { font-size: clamp(36px, 6.5vw, 80px); }
@@ -124,6 +134,100 @@ model-viewer {
     color: #C0DBB8;
     letter-spacing: 0.22em;
     line-height: 1;
+}
+
+/* ── Intro animation helpers ── */
+.hidden { opacity: 0; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInBottom {
+  from { opacity: 0; transform: translateY(100vh); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes randyFLIP {
+  from { transform: translate(var(--randy-dx), var(--randy-dy)); opacity: 0; }
+  to   { transform: translate(0, 0); opacity: 1; }
+}
+@keyframes letterIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.anim-fade      { animation: fadeIn          0.7s ease                            both; }
+.anim-rise      { animation: riseIn          0.8s ease                            both; }
+.anim-slide-up  { animation: slideInBottom   0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+.letter-in {
+  display: inline-block;
+  opacity: 0;
+  animation: letterIn 0.35s ease forwards;
+}
+
+/* ── Phase 0 outer wrapper — full viewport, content centered ── */
+.phase0-wrap {
+  width: 100%;
+  height: 100vh;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── State 1 intro container: logo above, Randy below ── */
+.intro-container {
+  width: 100%;
+  max-width: 860px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Logo model (State 1) ── */
+.logo-wrap {
+  width: 100%;
+  height: 28vh;
+  flex-shrink: 0;
+  margin-top: -4vh;
+  overflow: hidden;
+  padding: 0 5vw;
+}
+.logo-wrap model-viewer {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  --progress-bar-color: transparent;
+}
+
+/* ── Randy in State 1 — centered, fills remaining intro height ── */
+.intro-randy {
+  margin-top: -6vh;
+  flex: 0 0 38vh;
+  min-height: 0;
+  width: 100%;
+  max-width: 520px;
+}
+.intro-randy model-viewer {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  --progress-bar-color: transparent;
+  --progress-mask: transparent;
+}
+
+/* ── TM superscript on tagline ── */
+.tagline-tm {
+  font-size: 0.45em;
+  vertical-align: super;
+  letter-spacing: 0;
 }
 
 /* ── QR code box ── */
