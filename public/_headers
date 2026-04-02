@@ -1,0 +1,7 @@
+/assets/*.glb
+  Content-Type: model/gltf-binary
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*.usdz
+  Content-Type: model/vnd.usdz+zip
+  Cache-Control: public, max-age=31536000, immutable
