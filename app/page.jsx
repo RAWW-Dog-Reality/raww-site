@@ -31,8 +31,8 @@ export default function Home() {
       t(1200, () => setVis(v => ({ ...v, randy: true }))),
       t(2000, () => setVis(v => ({ ...v, reality: true }))),
       t(2800, () => setVis(v => ({ ...v, tagline: true }))),
-      t(60000, () => setPhase(1)),
-      t(61500, () => {
+      t(7500, () => setPhase(1)),
+      t(9000, () => {
         // Capture Randy's center before phase 1 unmounts (before React re-renders)
         if (randyPhase1Ref.current) {
           const r = randyPhase1Ref.current.getBoundingClientRect();

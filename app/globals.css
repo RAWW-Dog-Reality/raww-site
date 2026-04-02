@@ -80,11 +80,6 @@ model-viewer {
     --progress-mask: transparent;
 }
 
-/* ── Text block pulled up further in phase 0 ── */
-.intro-text-block {
-  margin-top: -52vh;
-}
-
 /* ── Text block: pulled up into the empty bottom of the model area ── */
 .text-block {
     margin-top: -3vh;
@@ -97,15 +92,30 @@ model-viewer {
     flex-shrink: 0;
 }
 
-/* ── Tall / portrait screen: models fill less height, pull text up more ── */
+/* ── Portrait — all vertical screens ── */
 @media (orientation: portrait) {
     .hero { max-height: 55vh; }
     .text-block { margin-top: -12vh; }
+    /* intro-text-block must come after .text-block rule to win the cascade */
+    .intro-text-block { margin-top: 2vh; }
 }
 
-/* ── Wide / landscape screen: less vertical room, reduce overlap ── */
+/* ── Mobile portrait (phones ≤ 480px) ── */
+@media (orientation: portrait) and (max-width: 480px) {
+    .intro-randy { flex: 0 0 32vh; }
+    .intro-text-block { margin-top: 1vh; }
+}
+
+/* ── Tablet portrait (481px – 768px) ── */
+@media (orientation: portrait) and (min-width: 481px) and (max-width: 768px) {
+    .intro-randy { flex: 0 0 35vh; }
+    .intro-text-block { margin-top: 2vh; }
+}
+
+/* ── Landscape ── */
 @media (orientation: landscape) {
     .logo-wrap { height: 56vh; }
+    .intro-text-block { margin-top: -52vh; }
     .hero { max-height: 50vh; }
     .text-block { margin-top: -2vh; }
     .reality-text { font-size: clamp(36px, 6.5vw, 80px); }
