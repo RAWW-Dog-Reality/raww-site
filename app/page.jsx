@@ -5,6 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 export default function Home() {
   const [phase, setPhase] = useState(0); // 0 = intro, 2 = main
   const [introFading, setIntroFading] = useState(false);
+  const [appReady, setAppReady] = useState(false);
   const [vis, setVis] = useState({
     logo: false, randy: false, reality: false, tagline: false,
   });
@@ -16,6 +17,9 @@ export default function Home() {
   const randyPhase2Ref = useRef(null); // Randy container in phase 2
   const logoMVRef    = useRef(null);   // logo model-viewer element
   const logoWrapRef  = useRef(null);   // logo-wrap div for FLIP
+  const randyMVRef   = useRef(null);   // randy model-viewer element (preload tracking)
+  const logoLoadedRef  = useRef(false);
+  const randyLoadedRef = useRef(false);
 
   // Track orientation for logo FOV
   useEffect(() => {
@@ -34,6 +38,8 @@ export default function Home() {
     if (!mv) return;
     let randyTimer = null;
     const handleLogoLoad = () => {
+      logoLoadedRef.current = true;
+      if (randyLoadedRef.current) setAppReady(true);
       randyTimer = setTimeout(() => {
         if (logoWrapRef.current) {
           logoWrapRef._savedTop = logoWrapRef.current.getBoundingClientRect().top;
@@ -47,6 +53,18 @@ export default function Home() {
       clearTimeout(randyTimer);
     };
   }, [phase]);
+
+  // Track Randy model load to dismiss loading screen once both logo + Randy are ready
+  useEffect(() => {
+    const mv = randyMVRef.current;
+    if (!mv) return;
+    const handler = () => {
+      randyLoadedRef.current = true;
+      if (logoLoadedRef.current) setAppReady(true);
+    };
+    mv.addEventListener('load', handler);
+    return () => mv.removeEventListener('load', handler);
+  }, []);
 
   // FLIP: after Randy mounts and layout shifts, animate logo-wrap from its old position
   useLayoutEffect(() => {
@@ -164,6 +182,7 @@ export default function Home() {
 
   const randyMV = (
     <model-viewer
+      ref={randyMVRef}
       src="/assets/randy.glb"
       camera-orbit="5deg 78deg auto"
       min-camera-orbit="-80deg 45deg auto"
@@ -180,6 +199,13 @@ export default function Home() {
 
   return (
     <>
+      {/* ── Loading screen: shows spinner until logo + Randy are both loaded ── */}
+      {!appReady && (
+        <div className="loading-screen">
+          <div className="loading-spinner" />
+        </div>
+      )}
+
       {/* ── Phase 0: Intro ── */}
       {phase === 0 && (
         <div className="phase0-wrap">
@@ -196,9 +222,9 @@ export default function Home() {
                 suppressHydrationWarning
               ></model-viewer>
             </div>
-            {/* Placeholder always reserves Randy's space; model fades in once loaded */}
-            <div ref={randyPhase1Ref} className={`intro-randy float-b${vis.randy ? ' anim-fade' : ''}`}>
-              {vis.randy && randyMV}
+            {/* Randy always mounted so it preloads; hidden until vis.randy */}
+            <div ref={randyPhase1Ref} className={`intro-randy float-b${vis.randy ? ' anim-fade' : ' hidden'}`}>
+              {randyMV}
             </div>
           </div>
           <div className={`text-block intro-text-block${introFading ? ' fade-out' : ''}`}>
