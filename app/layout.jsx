@@ -33,6 +33,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        <link rel="preload" href="/assets/loinchop.glb" as="fetch" crossOrigin="anonymous" />
         <script
           type="module"
           src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"

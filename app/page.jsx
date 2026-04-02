@@ -3,7 +3,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export default function Home() {
-  const [phase, setPhase] = useState(0); // 0 = intro, 1 = transition, 2 = main
+  const [phase, setPhase] = useState(0); // 0 = intro, 2 = main
+  const [introFading, setIntroFading] = useState(false);
   const [vis, setVis] = useState({
     logo: false, randy: false, reality: false, tagline: false,
   });
@@ -11,8 +12,10 @@ export default function Home() {
   const [randyFloating, setRandyFloating] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
 
-  const randyPhase1Ref = useRef(null); // Randy container in phase 1
+  const randyPhase1Ref = useRef(null); // Randy container in phase 0 (used for FLIP measurement)
   const randyPhase2Ref = useRef(null); // Randy container in phase 2
+  const logoMVRef    = useRef(null);   // logo model-viewer element
+  const logoWrapRef  = useRef(null);   // logo-wrap div for FLIP
 
   // Track orientation for logo FOV
   useEffect(() => {
@@ -23,17 +26,60 @@ export default function Home() {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
+  // Show Randy only after logo model has finished loading, then 800ms later.
+  // Save logo-wrap position just before triggering randy so we can FLIP it.
+  useEffect(() => {
+    if (phase !== 0) return;
+    const mv = logoMVRef.current;
+    if (!mv) return;
+    let randyTimer = null;
+    const handleLogoLoad = () => {
+      randyTimer = setTimeout(() => {
+        if (logoWrapRef.current) {
+          logoWrapRef._savedTop = logoWrapRef.current.getBoundingClientRect().top;
+        }
+        setVis(v => ({ ...v, randy: true }));
+      }, 800);
+    };
+    mv.addEventListener('load', handleLogoLoad);
+    return () => {
+      mv.removeEventListener('load', handleLogoLoad);
+      clearTimeout(randyTimer);
+    };
+  }, [phase]);
+
+  // FLIP: after Randy mounts and layout shifts, animate logo-wrap from its old position
+  useLayoutEffect(() => {
+    if (!vis.randy || !logoWrapRef.current || logoWrapRef._savedTop == null) return;
+    const newTop = logoWrapRef.current.getBoundingClientRect().top;
+    const dy = logoWrapRef._savedTop - newTop;
+    if (Math.abs(dy) < 1) return; // no meaningful shift
+    const el = logoWrapRef.current;
+    el.style.transition = 'none';
+    el.style.transform = `translateY(${dy}px)`;
+    el.getBoundingClientRect(); // force reflow
+    el.style.transition = 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)';
+    el.style.transform = 'translateY(0)';
+    logoWrapRef._savedTop = null;
+  }, [vis.randy]);
+
+  // Once Randy is visible, cascade in the text
+  useEffect(() => {
+    if (!vis.randy || phase !== 0) return;
+    const t1 = setTimeout(() => setVis(v => ({ ...v, reality: true })), 800);
+    const t2 = setTimeout(() => setVis(v => ({ ...v, tagline: true })), 1600);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [vis.randy]);
+
   // Intro sequence
   useEffect(() => {
     const t = (ms, fn) => setTimeout(fn, ms);
     const timers = [
       t(300,  () => setVis(v => ({ ...v, logo: true }))),
-      t(1200, () => setVis(v => ({ ...v, randy: true }))),
-      t(2000, () => setVis(v => ({ ...v, reality: true }))),
-      t(2800, () => setVis(v => ({ ...v, tagline: true }))),
-      t(7500, () => setPhase(1)),
+      // randy triggered by logo load event; reality/tagline triggered after randy
+      t(7500, () => setIntroFading(true)),
       t(9000, () => {
-        // Capture Randy's center before phase 1 unmounts (before React re-renders)
+        // Capture Randy's center from its phase 0 container before React re-renders
         if (randyPhase1Ref.current) {
           const r = randyPhase1Ref.current.getBoundingClientRect();
           randyPhase1Ref._savedRect = { cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
@@ -138,8 +184,9 @@ export default function Home() {
       {phase === 0 && (
         <div className="phase0-wrap">
           <div className="intro-container">
-            <div className={`logo-wrap${vis.logo ? ' anim-rise' : ' hidden'}`}>
+            <div ref={logoWrapRef} className={`logo-wrap${vis.logo ? ' anim-rise' : ' hidden'}${introFading ? ' fade-out' : ''}`}>
               <model-viewer
+                ref={logoMVRef}
                 src="/assets/logo.glb"
                 camera-orbit={isLandscape ? "0deg 88deg 55%" : "0deg 88deg 75%"}
                 min-camera-orbit={isLandscape ? "auto auto 55%" : "auto auto 75%"}
@@ -149,13 +196,12 @@ export default function Home() {
                 suppressHydrationWarning
               ></model-viewer>
             </div>
-            {vis.randy && (
-              <div className="intro-randy float-b anim-fade">
-                {randyMV}
-              </div>
-            )}
+            {/* Placeholder always reserves Randy's space; model fades in once loaded */}
+            <div ref={randyPhase1Ref} className={`intro-randy float-b${vis.randy ? ' anim-fade' : ''}`}>
+              {vis.randy && randyMV}
+            </div>
           </div>
-          <div className="text-block intro-text-block">
+          <div className={`text-block intro-text-block${introFading ? ' fade-out' : ''}`}>
             <div className={`reality-text${vis.reality ? ' anim-fade' : ' hidden'}`}>REALITY</div>
             <div className="tagline-text">
               {'CHANGE THE GAME.'.split('').map((ch, i) => (
@@ -166,16 +212,6 @@ export default function Home() {
                 >{ch === ' ' ? '\u00a0' : ch}</span>
               ))}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Phase 1: Blank + Randy centered (logo-wrap as invisible spacer) ── */}
-      {phase === 1 && (
-        <div className="intro-container">
-          <div className="logo-wrap" style={{ visibility: 'hidden' }} />
-          <div ref={randyPhase1Ref} className="intro-randy float-b">
-            {randyMV}
           </div>
         </div>
       )}
