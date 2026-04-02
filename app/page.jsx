@@ -4,19 +4,16 @@ import { useEffect } from 'react';
 
 export default function Home() {
   useEffect(() => {
-    // Tongue cursor
-    (function () {
-      const size = 64;
+    // Tongue cursor — load PNG asset
+    const img = new Image();
+    img.src = '/assets/cursor_tongue_short_sm.png';
+    img.onload = () => {
       const c = document.createElement('canvas');
-      c.width = c.height = size;
+      c.width = c.height = 96;
       const ctx = c.getContext('2d');
-      ctx.translate(size / 2, size / 2);
-      ctx.font = '44px serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('👅', 0, 2);
+      ctx.drawImage(img, 0, 0, 96, 96);
       const url = c.toDataURL();
-      const rule = `url(${url}) 10 10, auto`;
+      const rule = `url(${url}) 48 48, auto`;
       document.documentElement.style.cursor = rule;
 
       // Inject into each model-viewer shadow root so it overrides internal cursors
@@ -25,17 +22,13 @@ export default function Home() {
         const inject = () => {
           if (!mv.shadowRoot) return;
           const style = document.createElement('style');
-          style.textContent = `* { cursor: url(${url}) 10 10, auto !important; }`;
+          style.textContent = `* { cursor: url(${url}) 48 48, auto !important; }`;
           mv.shadowRoot.appendChild(style);
         };
-        // Shadow root may not exist until the element upgrades
-        if (mv.shadowRoot) {
-          inject();
-        } else {
-          customElements.whenDefined('model-viewer').then(inject);
-        }
+        if (mv.shadowRoot) inject();
+        else customElements.whenDefined('model-viewer').then(inject);
       });
-    })();
+    };
 
     // Camera-change reset timer for both model-viewers
     const timers = [];
